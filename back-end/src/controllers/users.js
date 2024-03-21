@@ -102,4 +102,34 @@ controller.delete = async function (req, res){
     }
 }
 
+controller.login = async function(req, res){
+    try{
+        // Busca o usuário pelo username
+        const user = await prisma.user.findUnique({
+            where: { username: req.body.username }
+        })
+        // se o usuário não foi encontrado, retorna HTTP 401: Usuário não autorizado
+        if(! user) return res.status(401).end()
+        // Usuário encontrado, vamos conferir a senha
+        const passwordMatches = await bcrypt.compare(req.body.password, user.password)
+        // Se a senha não confere - HTTP 401: Usuário não autorizado
+        if(! passwordMatches) return res.status(401).end()
+
+        // Formamos o token de autenfificação para enviar ao front-end
+        const token = jwt.sign(
+            user, // o token contém as informaçóes do usuário logado
+            process.env.TOKEN_SECRET, // senha de criptografia do token
+            { expiresIn: '24h' }      // prazo de validade do token
+        )
+
+        // envia o token na resposta com código HTTP 200: Ok(Implicito)
+        res.send({token})
+    }
+    catch(error) {
+        console.error(error)
+        // HTTP 500: Internal Server Error
+        res.status(500).end()
+    }
+}
+
 export default controller
