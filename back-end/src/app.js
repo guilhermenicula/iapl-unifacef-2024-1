@@ -1,10 +1,14 @@
+import dotenv from 'dotenv'
+// Carrega as variáveis do arquivo .env dentro
+// do objeto global process.env
+dotenv.config()
+
 import express, { json, urlencoded } from "express";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
-import dotenv from "dotenv";
-dotenv.config()
 
 import indexRouter from "./routes/index.js";
+//import usersRouter from "./routes/users.js";
 
 const app = express();
 
@@ -15,9 +19,20 @@ app.use(cookieParser());
 
 app.use("/", indexRouter);
 //app.use("/users", usersRouter);
-/********************** ROTAS **********************************/
 
+// MIDDLEWARE DE AUTENTICAÇÃO
+import auth from './middleware/auth.js'
+app.use(auth)
+
+/*************************************************
+ * ROTAS
+ *************************************************/
 import usersRouter from './routes/users.js'
+
+import carsRouter from './routes/cars.js'
+
 app.use('/users', usersRouter)
+
+app.use('/cars', carsRouter)
 
 export default app;
